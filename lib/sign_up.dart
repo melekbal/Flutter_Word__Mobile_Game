@@ -1,6 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:lingo/login_page.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -10,6 +12,10 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUpPage> {
+  late String email, password;
+  final forekey = GlobalKey<FormState>();
+  final firebaseAuth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
@@ -30,18 +36,22 @@ class _SignUpState extends State<SignUpPage> {
                 )),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  titleText(),
-                  customSizedBox(),
-                  emailTextField(),
-                  customSizedBox(),
-                  passwordTextField(),
-                  customSizedBox(),
-                  signUpButton(),
-                  backtoLoginPageButton(),
-                ],
+              child: Form(
+                key: forekey,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    titleText(),
+                    customSizedBox(),
+                    emailTextField(),
+                    customSizedBox(),
+                    passwordTextField(),
+                    customSizedBox(),
+                    signUpButton(),
+                    backtoLoginPageButton(),
+                  ],
+                ),
               ),
             )
           ],
@@ -53,17 +63,37 @@ class _SignUpState extends State<SignUpPage> {
   Center signUpButton() {
     return Center(
         child: TextButton(
-            onPressed: () {},
+            onPressed: signIn,
             child: Text(
               "Kayıt Ol",
               style: TextStyle(color: Colors.yellow),
             )));
   }
 
+  void signIn() async {
+    if (forekey.currentState != null && forekey.currentState!.validate()) {
+      forekey.currentState!.save();
+      try {
+        var user = await firebaseAuth.createUserWithEmailAndPassword(
+            email: email, password: password);
+        forekey.currentState!.reset();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text("Kullanıcı oluşturuldu."),
+        ));
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => LoginPage()));
+      } catch (e) {
+        print(e.toString());
+      }
+    } else {}
+  }
+
   Center backtoLoginPageButton() {
     return Center(
         child: TextButton(
-            onPressed: () => Navigator.pushNamed(context, '/loginPage'),
+            onPressed: () {
+              Navigator.pop(context);
+            },
             child: Text(
               "Giriş Sayfasına Dön",
               style: TextStyle(color: Colors.yellow),
@@ -72,6 +102,14 @@ class _SignUpState extends State<SignUpPage> {
 
   TextFormField passwordTextField() {
     return TextFormField(
+      validator: (value) {
+        if (value?.isEmpty ?? true) {
+          return "Şifre boş olamaz";
+        }
+        return null;
+      },
+      onSaved: (value) => password = value!,
+      obscureText: true,
       style: TextStyle(color: Colors.white),
       decoration: customInputDecoration("Şifre"),
     );
@@ -79,6 +117,13 @@ class _SignUpState extends State<SignUpPage> {
 
   TextFormField emailTextField() {
     return TextFormField(
+      validator: (value) {
+        if (value?.isEmpty ?? true) {
+          return "E-posta boş olamaz";
+        }
+        return null;
+      },
+      onSaved: (value) => email = value!,
       style: TextStyle(color: Colors.white),
       decoration: customInputDecoration("E-posta"),
     );

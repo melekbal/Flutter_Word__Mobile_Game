@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -11,6 +12,10 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  late String email, password;
+  final forekey = GlobalKey<FormState>();
+  final firebaseAuth = FirebaseAuth.instance;
+
   @override
   Widget build(BuildContext context) {
     var height = MediaQuery.of(context).size.height;
@@ -31,20 +36,23 @@ class _LoginPageState extends State<LoginPage> {
                 )),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  titleText(),
-                  customSizedBox(),
-                  emailTextField(),
-                  customSizedBox(),
-                  passwordTextField(),
-                  customSizedBox(),
-                  signInButton(),
-                  customSizedBox(),
-                  forgotPasswordButton(),
-                  signUpButton(),
-                ],
+              child: Form(
+                key: forekey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    titleText(),
+                    customSizedBox(),
+                    emailTextField(),
+                    customSizedBox(),
+                    passwordTextField(),
+                    customSizedBox(),
+                    signInButton(),
+                    customSizedBox(),
+                    forgotPasswordButton(),
+                    signUpButton(),
+                  ],
+                ),
               ),
             )
           ],
@@ -76,7 +84,19 @@ class _LoginPageState extends State<LoginPage> {
   Center signInButton() {
     return Center(
         child: TextButton(
-            onPressed: () {},
+            onPressed: () async {
+              if (forekey.currentState != null &&
+                  forekey.currentState!.validate()) {
+                forekey.currentState!.save();
+                try {
+                  final user = await firebaseAuth.signInWithEmailAndPassword(
+                      email: email, password: password);
+                  print(user.user!.email);
+                } catch (e) {
+                  print(e.toString());
+                }
+              }
+            },
             child: Container(
               height: 50,
               width: 150,
@@ -94,6 +114,14 @@ class _LoginPageState extends State<LoginPage> {
 
   TextFormField passwordTextField() {
     return TextFormField(
+      validator: (value) {
+        if (value?.isEmpty ?? true) {
+          return "Şifre boş olamaz";
+        }
+        return null;
+      },
+      onSaved: (value) => password = value!,
+      obscureText: true,
       style: TextStyle(color: Colors.white),
       decoration: customInputDecoration("Şifre"),
     );
@@ -101,6 +129,13 @@ class _LoginPageState extends State<LoginPage> {
 
   TextFormField emailTextField() {
     return TextFormField(
+      validator: (value) {
+        if (value?.isEmpty ?? true) {
+          return "E-posta boş olamaz";
+        }
+        return null;
+      },
+      onSaved: (value) => email = value!,
       style: TextStyle(color: Colors.white),
       decoration: customInputDecoration("E-posta"),
     );
