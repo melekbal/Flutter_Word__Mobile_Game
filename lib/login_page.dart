@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:lingo/sign_up.dart';
+import 'package:lingo/type_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
@@ -91,6 +92,8 @@ class _LoginPageState extends State<LoginPage> {
                 try {
                   final user = await firebaseAuth.signInWithEmailAndPassword(
                       email: email, password: password);
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (context) => TypePage()));
                   print(user.user!.email);
                 } catch (e) {
                   print(e.toString());

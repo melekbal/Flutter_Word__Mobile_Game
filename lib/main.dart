@@ -2,8 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:lingo/firebase_options.dart';
+import 'package:lingo/game_page.dart';
 import 'package:lingo/login_page.dart';
 import 'package:lingo/sign_up.dart';
+import 'package:lingo/type_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +25,9 @@ class MyApp extends StatelessWidget {
       title: 'Lingo',
       routes: {
         '/signUp': (context) => SignUpPage(),
+        '/login': (context) => LoginPage(),
+        '/type': (context) => TypePage(),
+        // '/game': (context) => GamePage(),
       },
       theme: ThemeData(
         primarySwatch: Colors.blue,
